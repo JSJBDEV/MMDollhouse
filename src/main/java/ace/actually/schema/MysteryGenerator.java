@@ -12,17 +12,19 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.RawFilteredPair;
+import net.minecraft.text.Text;
 
 import java.util.*;
 
 public class MysteryGenerator {
     public static final String[] MOBS = {"Pillager","Vindicator","Evoker","Illusioner","Witch","Shady Trader"};
-    public static final Item[] WEAPONS = {Items.IRON_AXE,Items.IRON_SWORD,Items.TRIDENT,Items.BOW,Items.CROSSBOW,Items.POTION,Items.BOOK,Items.AIR,Items.WHITE_CANDLE};
+    public static final Item[] WEAPONS = {Items.IRON_AXE,Items.IRON_SWORD,Items.TRIDENT,Items.BOW,Items.CROSSBOW,Items.POTION,Items.BOOK,Items.BOWL,Items.WHITE_CANDLE};
     public static final String[] ROOMS = {"bathroom","boilerroom","danceroom","kitchen","library","pooltable","storage"};
     private static final int DANGEROUS = 6;
 
-    public static void generateMystery(long seed, MinecraftServer server)
+    public static void generateMystery(long seed, ServerPlayerEntity spe)
     {
         Random random = new Random(seed);
         NbtCompound mystery = new NbtCompound();
@@ -73,7 +75,7 @@ public class MysteryGenerator {
                 case 2 ->
                 {
                     Item ritem = WEAPONS[random.nextInt(WEAPONS.length)];
-                    notes.add(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()));
+                    notes.add(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get());
                 }
             }
         }
@@ -97,9 +99,37 @@ public class MysteryGenerator {
 
         NbtCompound mysteries = new NbtCompound();
         mysteries.put(""+seed,mystery);
-        NbtCompound data = server.getDataCommandStorage().get(MMDollhouse.DATA);
+        NbtCompound data = spe.getServer().getDataCommandStorage().get(MMDollhouse.DATA);
         data.put("mysteries",mysteries);
-        server.getDataCommandStorage().set(MMDollhouse.DATA,data);
+        spe.getServer().getDataCommandStorage().set(MMDollhouse.DATA,data);
+
+        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
+        RawFilteredPair<String> title = new RawFilteredPair<>("Initial Questions", Optional.empty());
+        String author = spe.getNameForScoreboard();
+        List<RawFilteredPair<Text>> pages = new ArrayList<>();
+        for(String npc: MOBS)
+        {
+            Text text = Text.of("");
+            switch (random.nextInt(3))
+            {
+                case 0 ->
+                {
+                    text = Text.of(npc+"\n").copy().append(activities.get(random.nextInt(activities.size())));
+                }
+                case 1 ->
+                {
+                    text = Text.of(npc+"\n").copy().append(formatText(passwords.get(random.nextInt(passwords.size()))));
+                }
+                case 2 ->
+                {
+                    Item ritem = WEAPONS[random.nextInt(WEAPONS.length)];
+                    text = Text.of(npc+"\n").copy().append(formatText(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get()));
+                }
+            }
+            pages.add(new RawFilteredPair<>(text,Optional.empty()));
+        }
+        WrittenBookContentComponent component = new WrittenBookContentComponent(title,author,0,pages,true);
+        book.set(DataComponentTypes.WRITTEN_BOOK_CONTENT,component);
     }
 
     public static void writeBook(ServerPlayerEntity spe)
@@ -108,5 +138,30 @@ public class MysteryGenerator {
         RawFilteredPair<String> title = new RawFilteredPair<>("Initial Questions", Optional.empty());
         String author = spe.getNameForScoreboard();
 
+    }
+
+    private static Text formatText(String text)
+    {
+        MutableText formatted = Text.empty();
+        if(text.contains("&"))
+        {
+            String[] split = text.split("&");
+            formatted.append(split[1]).append(" ").append(Text.translatable(split[0])).append(" are in stock");
+        }
+        if(text.contains(": "))
+        {
+            String[] split = text.split(": ");
+            formatted.append("The password for the safe in ").append(split[0]).append(" is ").append(split[1]);
+        }
+        if(text.contains("#"))
+        {
+            String[] split = text.split(">");
+            String m  = split[0];
+            split = split[1].split("#");
+            formatted.append("Saw the ").append(m).append(" enter ").append(split[0]).append(" with a ").append(split[1]);
+
+        }
+
+        return formatted;
     }
 }

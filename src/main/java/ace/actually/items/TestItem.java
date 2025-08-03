@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -24,10 +25,15 @@ public class TestItem extends Item implements PolymerItem {
     }
 
     @Override
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context) {
+        return Items.STICK.getDefaultStack();
+    }
+
+    @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if(world instanceof ServerWorld serverWorld)
+        if(user instanceof ServerPlayerEntity spe)
         {
-            MysteryGenerator.generateMystery(1,serverWorld.getServer());
+            MysteryGenerator.generateMystery(1,spe);
         }
         return super.use(world, user, hand);
     }
