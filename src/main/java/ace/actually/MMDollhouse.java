@@ -15,6 +15,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,8 @@ public class MMDollhouse implements ModInitializer {
 	public static final Block DECISION_BLOCK = register("decision", DecisionBlock::new,AbstractBlock.Settings.create());
 
 	public static final Item TEST_ITEM = register("test", TestItem::new,new Item.Settings());
+
+	public static final RegistryKey<World> HOUSES = RegistryKey.of(RegistryKeys.WORLD,Identifier.of("mmdollhouse","dollhouses"));
 
 	@Override
 	public void onInitialize() {

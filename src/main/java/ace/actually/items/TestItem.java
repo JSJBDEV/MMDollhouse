@@ -30,7 +30,7 @@ public class TestItem extends Item implements PolymerItem {
     public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context) {
         ItemStack stack = new ItemStack(Items.STICK);
         stack.set(DataComponentTypes.ITEM_NAME,Text.of("Generator"));
-        return Items.STICK.getDefaultStack();
+        return stack;
     }
 
     @Override

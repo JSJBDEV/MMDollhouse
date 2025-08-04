@@ -10,11 +10,19 @@ import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.RawFilteredPair;
 import net.minecraft.text.Text;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.*;
 
@@ -33,6 +41,21 @@ public class MysteryGenerator {
         Item weapon = WEAPONS[random.nextInt(DANGEROUS)];
         List<String> rooms = Arrays.stream(ROOMS).filter(a-> random.nextBoolean()).toList();
         String room = rooms.get(random.nextInt(rooms.size()));
+
+        ServerWorld houses = spe.getServer().getWorld(MMDollhouse.HOUSES);
+        BlockPos p = new BlockPos((int) (seed*100),100, (int) (seed*100));
+        spe.teleport(houses,p.getX()+3,p.getY()+2,p.getZ()+3,PositionFlag.ROT,0,0,true);
+
+        spe.getServer().getStructureTemplateManager().getTemplateOrBlank(Identifier.of("mmdollhouse","main_room"))
+                .place(spe.getWorld(),p,BlockPos.ORIGIN,new StructurePlacementData().setMirror(BlockMirror.NONE).setRotation(BlockRotation.NONE),spe.getRandom(),3);
+        List<Vec3i> ROOM_POS = new ArrayList<>(List.of(new Vec3i(-9,0,0),new Vec3i(-9,0,9), new Vec3i(18,0,0), new Vec3i(18,0,9),new Vec3i(0,0,18),new Vec3i(9,0,18)));
+        for(String iroom: rooms)
+        {
+            Vec3i mov = ROOM_POS.remove(random.nextInt(ROOM_POS.size()));
+            spe.getServer().getStructureTemplateManager().getTemplateOrBlank(Identifier.of("mmdollhouse",iroom))
+                    .place(spe.getWorld(),p.add(mov),BlockPos.ORIGIN,new StructurePlacementData().setMirror(BlockMirror.NONE).setRotation(BlockRotation.NONE),spe.getRandom(),3);
+        }
+
 
         List<String> activities = new ArrayList<>();
         activities.add(mob+">"+room+"#"+weapon);
