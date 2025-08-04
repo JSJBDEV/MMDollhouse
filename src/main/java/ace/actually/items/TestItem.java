@@ -2,6 +2,7 @@ package ace.actually.items;
 
 import ace.actually.schema.MysteryGenerator;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -9,6 +10,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -26,6 +28,8 @@ public class TestItem extends Item implements PolymerItem {
 
     @Override
     public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context) {
+        ItemStack stack = new ItemStack(Items.STICK);
+        stack.set(DataComponentTypes.ITEM_NAME,Text.of("Generator"));
         return Items.STICK.getDefaultStack();
     }
 
@@ -34,6 +38,7 @@ public class TestItem extends Item implements PolymerItem {
         if(user instanceof ServerPlayerEntity spe)
         {
             MysteryGenerator.generateMystery(1,spe);
+            user.sendMessage(Text.of("Generated Mystery!"),true);
         }
         return super.use(world, user, hand);
     }

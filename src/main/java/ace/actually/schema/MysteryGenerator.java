@@ -22,7 +22,7 @@ public class MysteryGenerator {
     public static final String[] MOBS = {"Pillager","Vindicator","Evoker","Illusioner","Witch","Shady Trader"};
     public static final Item[] WEAPONS = {Items.IRON_AXE,Items.IRON_SWORD,Items.TRIDENT,Items.BOW,Items.CROSSBOW,Items.POTION,Items.BOOK,Items.BOWL,Items.WHITE_CANDLE};
     public static final String[] ROOMS = {"bathroom","boilerroom","danceroom","kitchen","library","pooltable","storage"};
-    private static final int DANGEROUS = 6;
+    public static final int DANGEROUS = 6;
 
     public static void generateMystery(long seed, ServerPlayerEntity spe)
     {
@@ -70,16 +70,17 @@ public class MysteryGenerator {
         for (int i = 0; i < 5; i++) {
             switch (random.nextInt(3))
             {
-                case 0 -> notes.add(passwords.get(random.nextInt(passwords.size())));
-                case 1 -> notes.add(activities.get(random.nextInt(activities.size())));
+                case 0 -> notes.add(random.nextInt(rooms.size())+"£"+passwords.get(random.nextInt(passwords.size())));
+                case 1 -> notes.add(random.nextInt(rooms.size())+"£"+activities.get(random.nextInt(activities.size())));
                 case 2 ->
                 {
                     Item ritem = WEAPONS[random.nextInt(WEAPONS.length)];
-                    notes.add(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get());
+                    notes.add(random.nextInt(rooms.size())+"£"+ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get());
                 }
             }
         }
 
+        mystery.putString("room",room);
         mystery.putLong("seed",seed);
         mystery.put("stockItems",stockItems);
         mystery.putString("mob",mob);
@@ -99,9 +100,16 @@ public class MysteryGenerator {
 
         NbtCompound mysteries = new NbtCompound();
         mysteries.put(""+seed,mystery);
+
         NbtCompound data = spe.getServer().getDataCommandStorage().get(MMDollhouse.DATA);
         data.put("mysteries",mysteries);
+        NbtCompound compound = data.getCompoundOrEmpty("players");
+        compound.putString(spe.getUuidAsString(),""+seed);
+        data.put("players",compound);
+
         spe.getServer().getDataCommandStorage().set(MMDollhouse.DATA,data);
+
+
 
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         RawFilteredPair<String> title = new RawFilteredPair<>("Initial Questions", Optional.empty());
@@ -114,7 +122,7 @@ public class MysteryGenerator {
             {
                 case 0 ->
                 {
-                    text = Text.of(npc+"\n").copy().append(activities.get(random.nextInt(activities.size())));
+                    text = Text.of(npc+"\n").copy().append(formatText(activities.get(random.nextInt(activities.size()))));
                 }
                 case 1 ->
                 {
@@ -130,19 +138,18 @@ public class MysteryGenerator {
         }
         WrittenBookContentComponent component = new WrittenBookContentComponent(title,author,0,pages,true);
         book.set(DataComponentTypes.WRITTEN_BOOK_CONTENT,component);
+        spe.giveItemStack(book);
     }
 
-    public static void writeBook(ServerPlayerEntity spe)
-    {
-        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        RawFilteredPair<String> title = new RawFilteredPair<>("Initial Questions", Optional.empty());
-        String author = spe.getNameForScoreboard();
-
-    }
-
-    private static Text formatText(String text)
+    public static Text formatText(String text)
     {
         MutableText formatted = Text.empty();
+        if(text.contains("£"))
+        {
+            String[] split = text.split("£");
+            formatted.append("You found a note: ");
+            text = split[1];
+        }
         if(text.contains("&"))
         {
             String[] split = text.split("&");
