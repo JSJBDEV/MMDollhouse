@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -74,6 +75,8 @@ public class DecisionBlock extends Block implements PolymerBlock {
                         }
                     }
                 }
+                int[] out = mystery.getIntArray("exit").get();
+                spe.teleport(spe.getServer().getOverworld(),out[0],out[1],out[2], PositionFlag.ROT,0,0,true);
             }));
             builder.build(spe).open();
         }

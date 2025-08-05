@@ -2,6 +2,7 @@ package ace.actually;
 
 import ace.actually.blocks.ClueBlock;
 import ace.actually.blocks.DecisionBlock;
+import ace.actually.blocks.SafeBlock;
 import ace.actually.items.TestItem;
 import net.fabricmc.api.ModInitializer;
 
@@ -32,6 +33,7 @@ public class MMDollhouse implements ModInitializer {
 
 	public static final Block CLUE_BLOCK = register("clue",ClueBlock::new,AbstractBlock.Settings.create());
 	public static final Block DECISION_BLOCK = register("decision", DecisionBlock::new,AbstractBlock.Settings.create());
+	public static final Block SAFE_BLOCK = register("safe", SafeBlock::new,AbstractBlock.Settings.create());
 
 	public static final Item TEST_ITEM = register("test", TestItem::new,new Item.Settings());
 

@@ -39,7 +39,7 @@ public class MysteryGenerator {
 
         String mob = MOBS[random.nextInt(MOBS.length)];
         Item weapon = WEAPONS[random.nextInt(DANGEROUS)];
-        List<String> rooms = Arrays.stream(ROOMS).filter(a-> random.nextBoolean()).toList();
+        List<String> rooms = Arrays.stream(ROOMS).filter(a-> random.nextInt(4)>0).toList();
         String room = rooms.get(random.nextInt(rooms.size()));
 
         ServerWorld houses = spe.getServer().getWorld(MMDollhouse.HOUSES);
@@ -58,10 +58,10 @@ public class MysteryGenerator {
 
 
         List<String> activities = new ArrayList<>();
-        activities.add(mob+">"+room+"#"+weapon);
+        activities.add(mob+">"+room+"#"+weapon.getTranslationKey());
         for (int i = 0; i < 10; i++) {
             String v = MOBS[random.nextInt(MOBS.length)]+">"+rooms.get(random.nextInt(rooms.size()))+"#"+WEAPONS[random.nextInt(WEAPONS.length)];
-            if(!v.equals(activities.getFirst()))
+            if(!v.contains(mob) && !v.contains(room) && !v.contains(weapon.getTranslationKey()))
             {
                 activities.add(v);
             }
@@ -79,6 +79,7 @@ public class MysteryGenerator {
         {
             if(item==weapon)
             {
+                //if the item is the weapon, then there is 1 less in stock then there should be
                 stockItems.putInt(item.getTranslationKey(),random.nextInt(1,4)-1);
             }
             else
@@ -88,10 +89,26 @@ public class MysteryGenerator {
 
         }
 
+        List<String> mobCopy = new ArrayList<>(List.of(MOBS));
+        mobCopy.remove(mob);
+        NbtList pairings = new NbtList();
+        while (mobCopy.size()>1)
+        {
+            String mob1 = mobCopy.get(0);
+            String mob2 = mobCopy.get(random.nextInt(mobCopy.size()));
+            if(!mob1.equals(mob2))
+            {
+                pairings.add(NbtString.of(mob1+"@"+mob2));
+                mobCopy.remove(mob1);
+                mobCopy.remove(mob2);
+            }
+
+        }
+
 
         List<String> notes = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            switch (random.nextInt(3))
+        for (int i = 0; i < rooms.size()+5; i++) {
+            switch (random.nextInt(4))
             {
                 case 0 -> notes.add(random.nextInt(rooms.size())+"£"+passwords.get(random.nextInt(passwords.size())));
                 case 1 -> notes.add(random.nextInt(rooms.size())+"£"+activities.get(random.nextInt(activities.size())));
@@ -100,9 +117,13 @@ public class MysteryGenerator {
                     Item ritem = WEAPONS[random.nextInt(WEAPONS.length)];
                     notes.add(random.nextInt(rooms.size())+"£"+ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get());
                 }
+                case 3 -> notes.add(random.nextInt(rooms.size())+"£"+pairings.getString(random.nextInt(pairings.size())).get());
             }
         }
 
+
+        mystery.put("pairings",pairings);
+        mystery.putIntArray("exit",new int[]{spe.getBlockX(),spe.getBlockY(),spe.getBlockZ()});
         mystery.putString("room",room);
         mystery.putLong("seed",seed);
         mystery.put("stockItems",stockItems);
@@ -141,11 +162,26 @@ public class MysteryGenerator {
         for(String npc: MOBS)
         {
             Text text = Text.of("");
-            switch (random.nextInt(3))
+            switch (random.nextInt(4))
             {
                 case 0 ->
                 {
-                    text = Text.of(npc+"\n").copy().append(formatText(activities.get(random.nextInt(activities.size()))));
+                    //if the npc is the antagonist then it shouldn't reveal the correct activity
+                    if(npc.equals(mob))
+                    {
+                        if(activities.size()>1)
+                        {
+                            text = Text.of(npc+"\n").copy().append(formatText(activities.get(random.nextInt(1,activities.size()))));
+                        }
+                        else
+                        {
+                            text = Text.of(npc+"\n").copy().append(formatText(passwords.get(random.nextInt(passwords.size()))));
+                        }
+                    }
+                    else
+                    {
+                        text = Text.of(npc+"\n").copy().append(formatText(activities.get(random.nextInt(activities.size()))));
+                    }
                 }
                 case 1 ->
                 {
@@ -154,7 +190,19 @@ public class MysteryGenerator {
                 case 2 ->
                 {
                     Item ritem = WEAPONS[random.nextInt(WEAPONS.length)];
-                    text = Text.of(npc+"\n").copy().append(formatText(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get()));
+                    if(weapon==ritem)
+                    {
+                        text = Text.of(npc+"\n").copy().append(formatText(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get()+1));
+                    }
+                    else
+                    {
+                        text = Text.of(npc+"\n").copy().append(formatText(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get()));
+                    }
+
+                }
+                case 3 ->
+                {
+                    text = Text.of(npc+"\n").copy().append(formatText(pairings.getString(random.nextInt(pairings.size())).get()));
                 }
             }
             pages.add(new RawFilteredPair<>(text,Optional.empty()));
@@ -176,12 +224,17 @@ public class MysteryGenerator {
         if(text.contains("&"))
         {
             String[] split = text.split("&");
-            formatted.append(split[1]).append(" ").append(Text.translatable(split[0])).append(" are in stock");
+            formatted.append(split[1]).append(" ").append(Text.translatable(split[0])).append("(s) are in stock");
         }
         if(text.contains(": "))
         {
             String[] split = text.split(": ");
             formatted.append("The password for the safe in ").append(split[0]).append(" is ").append(split[1]);
+        }
+        if(text.contains("@"))
+        {
+            String[] split = text.split("@");
+            formatted.append("Both ").append(split[0]).append(" and ").append(split[1]).append(" say they where in the same room together at the time");
         }
         if(text.contains("#"))
         {

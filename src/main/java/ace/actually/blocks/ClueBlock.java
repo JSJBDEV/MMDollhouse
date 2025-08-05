@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
@@ -20,6 +21,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
+
+import java.util.Arrays;
+import java.util.stream.IntStream;
 
 public class ClueBlock extends Block implements PolymerHeadBlock {
     public static IntProperty room = IntProperty.of("room",0, MysteryGenerator.ROOMS.length);
@@ -53,13 +57,21 @@ public class ClueBlock extends Block implements PolymerHeadBlock {
             String seed = players.getString(player.getUuidAsString()).get();
             NbtCompound mystery = data.getCompoundOrEmpty("mysteries").getCompoundOrEmpty(seed);
             NbtList notes = mystery.getListOrEmpty("notes");
-            for (int i = 0; i < notes.size(); i++) {
+
+            NbtList rooms = mystery.getListOrEmpty("rooms");
+            //TODO: There is a more efficient way to do this, requires rework
+            String absRoom = MysteryGenerator.ROOMS[state.get(ClueBlock.room)];
+            int relativeRoom = IntStream.range(0, rooms.size()).filter(i -> rooms.getString(i).get().equals(absRoom)).findFirst().orElse(-1);
+
+            //the safe finds the notes forwards, the clue block finds the notes backwards
+            for (int i = notes.size(); i > 0; i--) {
                 String split = notes.getString(i).get().split("£")[0];
-                if(Integer.parseInt(split)==state.get(room))
+                if(Integer.parseInt(split)==relativeRoom)
                 {
                     player.sendMessage(MysteryGenerator.formatText(notes.getString(i).get()),false);
+                    break;
                 }
-                break;
+
             }
         }
 
