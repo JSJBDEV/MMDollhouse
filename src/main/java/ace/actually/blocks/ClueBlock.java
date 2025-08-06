@@ -9,13 +9,16 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -63,16 +66,38 @@ public class ClueBlock extends Block implements PolymerHeadBlock {
             String absRoom = MysteryGenerator.ROOMS[state.get(ClueBlock.room)];
             int relativeRoom = IntStream.range(0, rooms.size()).filter(i -> rooms.getString(i).get().equals(absRoom)).findFirst().orElse(-1);
 
-            //the safe finds the notes forwards, the clue block finds the notes backwards
-            for (int i = notes.size()-1; i > 0; i--) {
-                String split = notes.getString(i).get().split("£")[0];
-                if(Integer.parseInt(split)==relativeRoom)
-                {
-                    player.sendMessage(MysteryGenerator.formatText(notes.getString(i).get()),false);
-                    break;
+            if(player.getStackInHand(Hand.MAIN_HAND).isOf(Items.BRUSH))
+            {
+                NbtList activities = mystery.getListOrEmpty("activities");
+                for (int i = 0; i < activities.size(); i++) {
+                    if(activities.getString(i).get().contains(absRoom))
+                    {
+                        player.sendMessage(Text.of(MysteryGenerator.formatText(activities.getString(i).get())),false);
+                    }
                 }
-
+                player.getStackInHand(Hand.MAIN_HAND).damage(5,player);
             }
+            else
+            {
+                //the safe finds the notes forwards, the clue block finds the notes backwards
+                boolean found = false;
+                for (int i = notes.size()-1; i > 0; i--) {
+                    String split = notes.getString(i).get().split("£")[0];
+                    if(Integer.parseInt(split)==relativeRoom)
+                    {
+                        player.sendMessage(MysteryGenerator.formatText(notes.getString(i).get()),false);
+                        found = true;
+                        break;
+                    }
+
+                }
+                if(!found)
+                {
+                    player.sendMessage(Text.of("You don't find anything useful in this room..."),false);
+                }
+            }
+
+
         }
 
         return super.onUse(state, world, pos, player, hit);

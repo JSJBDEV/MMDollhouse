@@ -1,5 +1,5 @@
 # Mob Mystery Doll House
-An overly ModFest: Toybox entry
+An overly complicated ModFest: Toybox entry
 
 # What?
 In Mob Mystery Dollhouse you find Dollhouse blocks in chests around the world and can place them down.

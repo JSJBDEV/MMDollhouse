@@ -44,13 +44,13 @@ public class MysteryGenerator {
         String room = rooms.get(random.nextInt(rooms.size()));
 
         ServerWorld houses = spe.getServer().getWorld(MMDollhouse.HOUSES);
-        BlockPos p = new BlockPos((int) (seed*100),100, (int) (seed*100));
+        BlockPos p = new BlockPos(random.nextInt(100000),random.nextInt(200), random.nextInt(100000));
         spe.changeGameMode(GameMode.ADVENTURE);
         spe.teleport(houses,p.getX()+3,p.getY()+2,p.getZ()+3,PositionFlag.ROT,0,0,true);
 
         spe.getServer().getStructureTemplateManager().getTemplateOrBlank(Identifier.of("mmdollhouse","main_room"))
                 .place(spe.getWorld(),p,BlockPos.ORIGIN,new StructurePlacementData().setMirror(BlockMirror.NONE).setRotation(BlockRotation.NONE),spe.getRandom(),3);
-        List<Vec3i> ROOM_POS = new ArrayList<>(List.of(new Vec3i(-9,0,0),new Vec3i(-9,0,9), new Vec3i(18,0,0), new Vec3i(18,0,9),new Vec3i(0,0,18),new Vec3i(9,0,18)));
+        List<Vec3i> ROOM_POS = new ArrayList<>(List.of(new Vec3i(-9,0,0),new Vec3i(0,0,-9),new Vec3i(-9,0,9), new Vec3i(18,0,0), new Vec3i(18,0,9),new Vec3i(0,0,18),new Vec3i(9,0,18)));
         for(String iroom: rooms)
         {
             Vec3i mov = ROOM_POS.remove(random.nextInt(ROOM_POS.size()));
@@ -142,10 +142,11 @@ public class MysteryGenerator {
         notes.forEach(a->nbtNotes.add(NbtString.of(a)));
         mystery.put("notes",nbtNotes);
 
-        NbtCompound mysteries = new NbtCompound();
+        NbtCompound data = spe.getServer().getDataCommandStorage().get(MMDollhouse.DATA);
+        NbtCompound mysteries = data.getCompoundOrEmpty("mysteries");
         mysteries.put(""+seed,mystery);
 
-        NbtCompound data = spe.getServer().getDataCommandStorage().get(MMDollhouse.DATA);
+
         data.put("mysteries",mysteries);
         NbtCompound compound = data.getCompoundOrEmpty("players");
         compound.putString(spe.getUuidAsString(),""+seed);
@@ -192,7 +193,7 @@ public class MysteryGenerator {
                     Item ritem = WEAPONS[random.nextInt(WEAPONS.length)];
                     if(weapon==ritem)
                     {
-                        text = Text.of(npc+"\n").copy().append(formatText(ritem.getTranslationKey()+"&"+stockItems.getInt(ritem.getTranslationKey()).get()+1));
+                        text = Text.of(npc+"\n").copy().append(formatText(ritem.getTranslationKey()+"&"+(stockItems.getInt(ritem.getTranslationKey()).get()+1)));
                     }
                     else
                     {
