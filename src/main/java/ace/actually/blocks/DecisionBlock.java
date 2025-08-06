@@ -22,6 +22,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -77,6 +78,7 @@ public class DecisionBlock extends Block implements PolymerBlock {
                 }
                 int[] out = mystery.getIntArray("exit").get();
                 spe.teleport(spe.getServer().getOverworld(),out[0],out[1],out[2], PositionFlag.ROT,0,0,true);
+                spe.changeGameMode(GameMode.SURVIVAL);
             }));
             builder.build(spe).open();
         }

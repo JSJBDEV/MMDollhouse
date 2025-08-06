@@ -23,6 +23,7 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.GameMode;
 
 import java.util.*;
 
@@ -44,6 +45,7 @@ public class MysteryGenerator {
 
         ServerWorld houses = spe.getServer().getWorld(MMDollhouse.HOUSES);
         BlockPos p = new BlockPos((int) (seed*100),100, (int) (seed*100));
+        spe.changeGameMode(GameMode.ADVENTURE);
         spe.teleport(houses,p.getX()+3,p.getY()+2,p.getZ()+3,PositionFlag.ROT,0,0,true);
 
         spe.getServer().getStructureTemplateManager().getTemplateOrBlank(Identifier.of("mmdollhouse","main_room"))
@@ -120,8 +122,6 @@ public class MysteryGenerator {
                 case 3 -> notes.add(random.nextInt(rooms.size())+"£"+pairings.getString(random.nextInt(pairings.size())).get());
             }
         }
-
-
         mystery.put("pairings",pairings);
         mystery.putIntArray("exit",new int[]{spe.getBlockX(),spe.getBlockY(),spe.getBlockZ()});
         mystery.putString("room",room);
