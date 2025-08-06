@@ -69,12 +69,16 @@ public class SafeBlock extends Block implements PolymerBlock {
                         System.out.println(split[1]+" -> "+inputGui.getInput());
                         if(split[1].equals(inputGui.getInput()))
                         {
-                            //The notes that are found are at the same index as the password is in the password list, and +1
-                            //TODO: this should probably instead pick a note that is assigned to that room...
-                            player.sendMessage(MysteryGenerator.formatText(notes.getString(i).get()),false);
-                            player.sendMessage(MysteryGenerator.formatText(notes.getString(i+1).get()),false);
-                            inputGui.close(false);
-                            break;
+                            for (int j = 0; j < notes.size(); j++) {
+                                if(Integer.parseInt(notes.getString(j).get().split("£")[0])==relativeRoom)
+                                {
+                                    player.sendMessage(MysteryGenerator.formatText(notes.getString(j).get()),false);
+                                    player.sendMessage(MysteryGenerator.formatText(notes.getString(j+1).get()),false);
+                                    inputGui.close(false);
+                                    break;
+                                }
+                            }
+
                         }
                     }
                 }

@@ -64,7 +64,7 @@ public class ClueBlock extends Block implements PolymerHeadBlock {
             int relativeRoom = IntStream.range(0, rooms.size()).filter(i -> rooms.getString(i).get().equals(absRoom)).findFirst().orElse(-1);
 
             //the safe finds the notes forwards, the clue block finds the notes backwards
-            for (int i = notes.size(); i > 0; i--) {
+            for (int i = notes.size()-1; i > 0; i--) {
                 String split = notes.getString(i).get().split("£")[0];
                 if(Integer.parseInt(split)==relativeRoom)
                 {
