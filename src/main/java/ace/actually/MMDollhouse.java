@@ -2,7 +2,9 @@ package ace.actually;
 
 import ace.actually.blocks.ClueBlock;
 import ace.actually.blocks.DecisionBlock;
+import ace.actually.blocks.DollhouseBlock;
 import ace.actually.blocks.SafeBlock;
+import ace.actually.items.PolymerBlockItem;
 import ace.actually.items.TestItem;
 import net.fabricmc.api.ModInitializer;
 
@@ -31,6 +33,7 @@ public class MMDollhouse implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final Identifier DATA = Identifier.of("mmdollhouse","data");
 
+	public static final Block DOLLHOUSE = register("dollhouse", DollhouseBlock::new,AbstractBlock.Settings.create());
 	public static final Block CLUE_BLOCK = register("clue",ClueBlock::new,AbstractBlock.Settings.create());
 	public static final Block DECISION_BLOCK = register("decision", DecisionBlock::new,AbstractBlock.Settings.create());
 	public static final Block SAFE_BLOCK = register("safe", SafeBlock::new,AbstractBlock.Settings.create());
@@ -53,7 +56,7 @@ public class MMDollhouse implements ModInitializer {
 		final RegistryKey<Block> registryKey = RegistryKey.of(RegistryKeys.BLOCK, identifier);
 
 		final Block block = Blocks.register(registryKey, factory, settings);
-		Items.register(block);
+		Items.register(block, PolymerBlockItem::new);
 		return block;
 	}
 

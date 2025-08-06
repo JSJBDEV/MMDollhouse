@@ -60,7 +60,7 @@ public class MysteryGenerator {
         List<String> activities = new ArrayList<>();
         activities.add(mob+">"+room+"#"+weapon.getTranslationKey());
         for (int i = 0; i < 10; i++) {
-            String v = MOBS[random.nextInt(MOBS.length)]+">"+rooms.get(random.nextInt(rooms.size()))+"#"+WEAPONS[random.nextInt(WEAPONS.length)];
+            String v = MOBS[random.nextInt(MOBS.length)]+">"+rooms.get(random.nextInt(rooms.size()))+"#"+WEAPONS[random.nextInt(WEAPONS.length)].getTranslationKey();
             if(!v.contains(mob) && !v.contains(room) && !v.contains(weapon.getTranslationKey()))
             {
                 activities.add(v);
@@ -241,7 +241,7 @@ public class MysteryGenerator {
             String[] split = text.split(">");
             String m  = split[0];
             split = split[1].split("#");
-            formatted.append("Saw the ").append(m).append(" enter ").append(split[0]).append(" with a ").append(split[1]);
+            formatted.append("Saw the ").append(m).append(" enter ").append(split[0]).append(" with a ").append(Text.translatable(split[1]));
 
         }
 
