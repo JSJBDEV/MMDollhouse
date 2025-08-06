@@ -2,16 +2,16 @@
 	"schemaVersion": 1,
 	"id": "mmdollhouse",
 	"version": "${version}",
-	"name": "MMDollhouse",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Mob Mystery Dollhouse",
+	"description": "A \"murder mystery\" minigame (that can be run entirely serverside, or on your own!)",
 	"authors": [
-		"Me!"
+		"Acrogenous"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/JSJBDEV/MMDollhouse",
+		"sources": "https://github.com/JSJBDEV/MMDollhouse"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/mmdollhouse/icon.png",
 	"environment": "*",
 	"entrypoints": {
