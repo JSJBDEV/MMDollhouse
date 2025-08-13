@@ -6,6 +6,7 @@ import ace.actually.blocks.DollhouseBlock;
 import ace.actually.blocks.SafeBlock;
 import ace.actually.items.PolymerBlockItem;
 import ace.actually.items.TestItem;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.block.AbstractBlock;
@@ -47,7 +48,7 @@ public class MMDollhouse implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-
+		PolymerResourcePackUtils.addModAssets("mmdollhouse");
 		LOGGER.info("Hello Fabric world!");
 	}
 
