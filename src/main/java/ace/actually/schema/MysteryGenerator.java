@@ -1,17 +1,24 @@
 package ace.actually.schema;
 
 import ace.actually.MMDollhouse;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BarrelBlockEntity;
+import net.minecraft.command.DataCommandStorage;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.WrittenBookContentComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.WrittenBookItem;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.datafixer.fix.ItemNbtFix;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.IllusionerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.*;
+import net.minecraft.nbt.*;
+import net.minecraft.nbt.scanner.NbtCollector;
+import net.minecraft.network.handler.EncoderHandler;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.SaveLoader;
+import net.minecraft.server.command.GiveCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructurePlacementData;
@@ -20,8 +27,10 @@ import net.minecraft.text.RawFilteredPair;
 import net.minecraft.text.Text;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.GameMode;
 
@@ -35,6 +44,9 @@ public class MysteryGenerator {
 
     public static void generateMystery(long seed, ServerPlayerEntity spe)
     {
+
+
+
         Random random = new Random(seed);
         NbtCompound mystery = new NbtCompound();
 
@@ -46,7 +58,22 @@ public class MysteryGenerator {
         ServerWorld houses = spe.getServer().getWorld(MMDollhouse.HOUSES);
         BlockPos p = new BlockPos(random.nextInt(100000),random.nextInt(200), random.nextInt(100000));
         spe.changeGameMode(GameMode.ADVENTURE);
+        mystery.putIntArray("exit",new int[]{spe.getBlockX(),spe.getBlockY(),spe.getBlockZ()});
         spe.teleport(houses,p.getX()+3,p.getY()+2,p.getZ()+3,PositionFlag.ROT,0,0,true);
+
+        NbtCompound data = spe.getServer().getDataCommandStorage().get(MMDollhouse.DATA);
+        if(data.contains("mysteries"))
+        {
+            if(data.getCompoundOrEmpty("mysteries").contains(""+seed))
+            {
+                NbtCompound compound = data.getCompoundOrEmpty("players");
+                compound.putString(spe.getUuidAsString(),""+seed);
+                data.put("players",compound);
+
+                spe.getServer().getDataCommandStorage().set(MMDollhouse.DATA,data);
+                return;
+            }
+        }
 
         spe.getServer().getStructureTemplateManager().getTemplateOrBlank(Identifier.of("mmdollhouse","main_room"))
                 .place(spe.getWorld(),p,BlockPos.ORIGIN,new StructurePlacementData().setMirror(BlockMirror.NONE).setRotation(BlockRotation.NONE),spe.getRandom(),3);
@@ -123,7 +150,6 @@ public class MysteryGenerator {
             }
         }
         mystery.put("pairings",pairings);
-        mystery.putIntArray("exit",new int[]{spe.getBlockX(),spe.getBlockY(),spe.getBlockZ()});
         mystery.putString("room",room);
         mystery.putLong("seed",seed);
         mystery.put("stockItems",stockItems);
@@ -142,7 +168,6 @@ public class MysteryGenerator {
         notes.forEach(a->nbtNotes.add(NbtString.of(a)));
         mystery.put("notes",nbtNotes);
 
-        NbtCompound data = spe.getServer().getDataCommandStorage().get(MMDollhouse.DATA);
         NbtCompound mysteries = data.getCompoundOrEmpty("mysteries");
         mysteries.put(""+seed,mystery);
 

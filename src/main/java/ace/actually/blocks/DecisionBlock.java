@@ -3,16 +3,22 @@ package ace.actually.blocks;
 import ace.actually.MMDollhouse;
 import ace.actually.schema.MysteryGenerator;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.sgui.api.gui.SimpleGuiBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
+import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -20,13 +26,15 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-public class DecisionBlock extends Block implements PolymerBlock {
+public class DecisionBlock extends Block implements BlockWithElementHolder, PolymerBlock {
     public DecisionBlock(Settings settings) {
         super(settings);
     }
@@ -53,6 +61,10 @@ public class DecisionBlock extends Block implements PolymerBlock {
             }
             for (int i = 0; i < MysteryGenerator.DANGEROUS; i++) {
                 ItemStack stack = new ItemStack(MysteryGenerator.WEAPONS[i]);
+                if(MysteryGenerator.WEAPONS[i] == Items.POTION)
+                {
+                    stack.set(DataComponentTypes.POTION_CONTENTS,new PotionContentsComponent(Potions.POISON));
+                }
                 final int j = i;
                 builder.setSlot(i+9,stack,((i1, clickType, slotActionType) -> choice.putString("weapon",MysteryGenerator.WEAPONS[j].getTranslationKey())));
             }
@@ -87,6 +99,18 @@ public class DecisionBlock extends Block implements PolymerBlock {
 
     @Override
     public BlockState getPolymerBlockState(BlockState blockState, PacketContext packetContext) {
-        return Blocks.GLASS.getDefaultState();
+        return Blocks.BARRIER.getDefaultState();
+    }
+
+    @Override
+    public @Nullable ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
+        ItemStack stick = new ItemStack(Items.STICK);
+        stick.set(DataComponentTypes.ITEM_MODEL, Identifier.of("mmdollhouse","decision"));
+
+        ItemDisplayElement element = new ItemDisplayElement(stick);
+        element.setBrightness(Brightness.FULL);
+        ElementHolder holder = new ElementHolder();
+        holder.addElement(element);
+        return holder;
     }
 }

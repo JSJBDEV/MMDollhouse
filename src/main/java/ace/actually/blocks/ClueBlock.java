@@ -2,33 +2,37 @@ package ace.actually.blocks;
 
 import ace.actually.MMDollhouse;
 import ace.actually.schema.MysteryGenerator;
-import eu.pb4.polymer.core.api.block.PolymerHeadBlock;
-import eu.pb4.polymer.core.api.block.SimplePolymerBlock;
-import eu.pb4.polymer.core.api.utils.PolymerUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import eu.pb4.polymer.core.api.block.PolymerBlock;
+import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.minecraft.block.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
-public class ClueBlock extends Block implements PolymerHeadBlock {
+public class ClueBlock extends Block implements BlockWithElementHolder, PolymerBlock {
     public static IntProperty room = IntProperty.of("room",0, MysteryGenerator.ROOMS.length);
 
     public ClueBlock(Settings settings) {
@@ -40,15 +44,15 @@ public class ClueBlock extends Block implements PolymerHeadBlock {
         super.appendProperties(builder.add(room));
     }
 
+    @Override
+    protected BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.INVISIBLE;
+    }
+
     @Nullable
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         return super.getPlacementState(ctx).with(room,0);
-    }
-
-    @Override
-    public String getPolymerSkinValue(BlockState blockState, BlockPos blockPos, PacketContext packetContext) {
-        return "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTViNTJhNWJhNDdiNDg3YTRlYTcyM2NjZjQwNGIzM2FjOWVkODA0MjhjNjI2YzA5OWViZWU0YmI3ZTZmNjM2MyJ9fX0=";
     }
 
     @Override
@@ -101,5 +105,22 @@ public class ClueBlock extends Block implements PolymerHeadBlock {
         }
 
         return super.onUse(state, world, pos, player, hit);
+    }
+
+    @Override
+    public @Nullable ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
+        ItemStack stick = new ItemStack(Items.STICK);
+        stick.set(DataComponentTypes.ITEM_MODEL, Identifier.of("mmdollhouse","clue"));
+
+        ItemDisplayElement element = new ItemDisplayElement(stick);
+        element.setBrightness(Brightness.FULL);
+        ElementHolder holder = new ElementHolder();
+        holder.addElement(element);
+        return holder;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState blockState, PacketContext packetContext) {
+        return Blocks.BARRIER.getDefaultState();
     }
 }

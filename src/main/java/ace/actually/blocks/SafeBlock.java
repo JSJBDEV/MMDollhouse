@@ -3,30 +3,35 @@ package ace.actually.blocks;
 import ace.actually.MMDollhouse;
 import ace.actually.schema.MysteryGenerator;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
-public class SafeBlock extends Block implements PolymerBlock {
+public class SafeBlock extends Block implements BlockWithElementHolder, PolymerBlock {
     public SafeBlock(Settings settings) {
         super(settings);
     }
@@ -36,10 +41,27 @@ public class SafeBlock extends Block implements PolymerBlock {
         super.appendProperties(builder.add(ClueBlock.room));
     }
 
+    @Override
+    protected BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.INVISIBLE;
+    }
+
     @Nullable
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         return super.getPlacementState(ctx).with(ClueBlock.room,0);
+    }
+
+    @Override
+    public @Nullable ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
+        ItemStack stick = new ItemStack(Items.STICK);
+        stick.set(DataComponentTypes.ITEM_MODEL, Identifier.of("mmdollhouse","safe"));
+
+        ItemDisplayElement element = new ItemDisplayElement(stick);
+        element.setBrightness(Brightness.FULL);
+        ElementHolder holder = new ElementHolder();
+        holder.addElement(element);
+        return holder;
     }
 
     @Override
@@ -95,6 +117,6 @@ public class SafeBlock extends Block implements PolymerBlock {
 
     @Override
     public BlockState getPolymerBlockState(BlockState blockState, PacketContext packetContext) {
-        return Blocks.BLACK_STAINED_GLASS.getDefaultState();
+        return Blocks.BARRIER.getDefaultState();
     }
 }
