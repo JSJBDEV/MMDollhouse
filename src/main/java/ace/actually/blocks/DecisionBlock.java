@@ -84,13 +84,14 @@ public class DecisionBlock extends Block implements BlockWithElementHolder, Poly
                     {
                         if(mystery.getString("room").get().equals(choice.getString("room").get()))
                         {
-                            player.sendMessage(Text.of("You Win!"),false);
+                            player.sendMessage(Text.of("You Guessed Correctly!"),false);
+                            player.sendMessage(Text.of("In the future you will get a proper reward here..."),false);
                         }
                     }
                 }
                 int[] out = mystery.getIntArray("exit").get();
                 spe.teleport(spe.getServer().getOverworld(),out[0],out[1],out[2], PositionFlag.ROT,0,0,true);
-                spe.changeGameMode(GameMode.SURVIVAL);
+                spe.changeGameMode(spe.getServer().getDefaultGameMode());
             }));
             builder.build(spe).open();
         }
